@@ -1,0 +1,24 @@
+{
+  "name": "stop2shop",
+  "version": "1.0.0",
+  "description": "a ecommerce app ",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js -e js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Danny",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.2",
+    "validator": "^12.2.0"
+  },
+  "devDependencies": {
+    "config": "^3.2.6",
+    "nodemon": "^2.0.2"
+  }
+}
