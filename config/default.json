@@ -1,0 +1,8 @@
+{
+    "MONGODB_URI": "mongodb+srv://danny:gold@cluster0-zz9zy.mongodb.net/test?retryWrites=true&w=majority",
+    "JWT_SECRET": "joan",
+    "CLOUD_NAME": "stop2shop",
+    "API_KEY": "218746364277995",
+    "API_SECRET": "91VpCydoOahey2tpM-XeqQbNUns",
+    "SENDGRID_API_KEY": "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"
+}

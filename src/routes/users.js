@@ -8,14 +8,18 @@ const {
 } = require('express-validator');
 const User = require('../models/user');
 const auth = require('../middleware/auth')
-
+const permit = require('../middleware/permit')
+const {
+  sendWelcomeMessage,
+  sendLoginMessage
+} = require('../messages/alerts')
 
 // Create User
 router.post('/register', [
   check("name", "Name is required")
   .not()
   .isEmpty(),
-  check("email", "Email is requied").isEmail(),
+  check("email", "Email is required").isEmail(),
   check(
     "password",
     "Password with 6 or more characters is required"
@@ -52,7 +56,7 @@ router.post('/register', [
     const salt = await bcrypt.genSalt(10)
     user.password = await bcrypt.hash(password, salt)
     await user.save()
-
+    sendWelcomeMessage(email, name)
     const payload = {
       user: {
         id: user.id
@@ -60,7 +64,7 @@ router.post('/register', [
     }
 
     const token = await jwt.sign(payload, config.get('JWT_SECRET'), {
-      expiresIn: 3600
+      expiresIn: 36000
     })
 
     res.json({
@@ -104,7 +108,8 @@ router.post('/login', [
         msg: 'Invalid email or password'
       })
     }
-
+    console.log(user.name)
+    sendLoginMessage(email, user.name)
     const payload = {
       user: {
         id: user.id
@@ -112,7 +117,7 @@ router.post('/login', [
     }
 
     const token = await jwt.sign(payload, config.get('JWT_SECRET'), {
-      expiresIn: 3600
+      expiresIn: 36000
     })
     res.status(200).json({
       token
@@ -140,5 +145,73 @@ router.get('/', auth, async (req, res) => {
   }
 })
 
+// GET all users
+router.get('/all', auth, permit, async (req, res) => {
+  try {
+    const users = await User.find()
+    if (!users) {
+      return res.status(404).json({
+        msg: 'No user found!'
+      })
+    }
+    res.json(users)
+  } catch (error) {
+    console.error(error)
+    res.status(500).send('Server Error')
+  }
+
+})
+// Login Admin
+// router.post('/admin', [
+//   check("email", "Please Enter a valid email").isEmail(),
+//   check("password", "Please Enter a password").exists()
+// ], async (req, res) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     return res.status(400).json({
+//       errors: errors.array()
+//     });
+//   }
+
+//   try {
+//     const {
+//       email,
+//       password
+//     } = req.body
+//     const user = await User.findOne({
+//       email
+//     })
+//     if (!user) {
+//       return res.status(400).json({
+//         msg: 'Invalid email or password'
+//       })
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.password)
+
+//     if (!isMatch) {
+//       return res.status(400).json({
+//         msg: 'Invalid email or password'
+//       })
+//     }
+
+//     const payload = {
+//       user: {
+//         id: user.id
+//       }
+//     }
+
+//     const token = await jwt.sign(payload, config.get('JWT_SECRET'), {
+//       expiresIn: 3600
+//     })
+//     res.status(200).json({
+//       token
+//     })
+//   } catch (error) {
+//     console.error(error.message)
+//     res.status(500).send('Server Error')
+//   }
+
+// })
 
 module.exports = router

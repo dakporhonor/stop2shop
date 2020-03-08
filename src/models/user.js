@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-const userSChema = mongoose.Schema({
+const UserScema = mongoose.Schema({
     name: {
         type: String,
         required: true,
@@ -17,12 +17,16 @@ const userSChema = mongoose.Schema({
         required: true,
         trim: true
     },
-     date: {
-         type: Date,
-         default: Date.now
-     }
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
+    date: {
+        type: Date,
+        default: Date.now
+    }
 })
 
-const User = mongoose.model('User', userSChema)
+const User = mongoose.model('User', UserScema)
 
 module.exports = User
