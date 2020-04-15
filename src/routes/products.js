@@ -1,59 +1,45 @@
 const router = require("express").Router();
+const mongoose = require("mongoose");
 const Product = require("../models/product");
 const auth = require("../middleware/auth");
-const permit = require('../middleware/permit')
+const permit = require("../middleware/permit");
 const multer = require("multer");
 const DataUri = require("datauri");
 const path = require("path");
 const cloudinary = require("cloudinary").v2;
 const config = require("config");
-const {
-	check,
-	validationResult
-} = require("express-validator");
+const { check, validationResult } = require("express-validator");
 
 /* All Private routes with admin privilege */
 // Create Product
 router.post(
 	"/",
 	[
-		check("name", "Product name is required")
-		.not()
-		.isEmpty(),
-		check("type", "Product type is required")
-		.not()
-		.isEmpty(),
-		check("description", "Product description is required")
-		.not()
-		.isEmpty(),
-		check("price", "Product price is required")
-		.not()
-		.isEmpty()
+		check("name", "Product name is required").not().isEmpty(),
+		check("type", "Product type is required").not().isEmpty(),
+		check("description", "Product description is required").not().isEmpty(),
+		check("price", "Product price is required").not().isEmpty(),
 	],
-	auth, permit,
+	auth,
+	permit,
 	async (req, res) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({
-				errors: errors.array()
+				errors: errors.array(),
 			});
 		}
 
 		try {
-			const {
-				name,
-				description,
-				type,
-				price
-			} = req.body;
+			const { name, description, type, price } = req.body;
 			let product = await Product.findOne({
 				name,
 				type,
-				price
+				price,
 			});
 			if (product) {
 				return res.status(400).json({
-					msg: "Product already exist"
+					msg: "Product already exist",
 				});
 			}
 
@@ -61,7 +47,7 @@ router.post(
 				name,
 				description,
 				type,
-				price
+				price,
 			});
 			await product.save();
 			console.log(req.body);
@@ -83,12 +69,12 @@ router.post(
 cloudinary.config({
 	cloud_name: config.get("CLOUD_NAME"),
 	api_key: config.get("API_KEY"),
-	api_secret: config.get("API_SECRET")
+	api_secret: config.get("API_SECRET"),
 });
 
 const upload = multer({
 	limits: {
-		fileSize: 1500000
+		fileSize: 1500000,
 	},
 	storage: multer.memoryStorage(),
 	fileFilter(req, file, done) {
@@ -96,18 +82,23 @@ const upload = multer({
 			return done(new Error("Please upload a image"));
 		}
 		done(undefined, true);
-	}
+	},
 });
 
-router.post(
-	"/:product_ID",
+router.put(
+	"/image/:product_Id",
 	[auth, permit, upload.single("image")],
 	async (req, res) => {
 		try {
-			const product = await Product.findById(req.params.product_ID);
+			console.dir(req.originalUrl);
+			console.dir(req.baseUrl);
+			console.dir(req.path);
+			console.dir(req.params);
+			const product = await Product.findById(req.params.product_Id);
+			console.log(product);
 			if (!product) {
 				return res.status(404).json({
-					msg: "No product found"
+					msg: "No product found",
 				});
 			}
 			const datauri = new DataUri();
@@ -117,11 +108,11 @@ router.post(
 			);
 			cloudinary.uploader.upload(datauri.content, async (error, imageResult) => {
 				if (error) throw new Error(error);
-				product.image = imageResult.secure_url
-				await product.save()
-				res.status(200).json(product)
+				product.image = imageResult.secure_url;
+				await product.save();
+				console.log("It worked");
+				res.status(200).json(product);
 			});
-
 		} catch (error) {
 			console.log(error.message);
 			res.status(500).send("Server Error");
@@ -129,14 +120,14 @@ router.post(
 	}
 );
 // Get Products
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
 	try {
 		const products = await Product.find().sort({
-			date: -1
+			date: -1,
 		});
 		if (products.length === 0) {
 			return res.status(404).json({
-				msg: "No Product Found!"
+				msg: "No Product Found!",
 			});
 		}
 		res.status(200).json(products);
@@ -150,10 +141,10 @@ router.get("/products/:product_ID", auth, async (req, res) => {
 
 	if (!product) {
 		return res.status(404).json({
-			msg: "No Product Found!"
+			msg: "No Product Found!",
 		});
 	}
-
+	console.log(products);
 	res.status(200).json(product);
 });
 
@@ -162,57 +153,45 @@ router.put(
 	"/:product_ID",
 	[
 		[
-			check("name", "Product name is required")
-			.not()
-			.isEmpty(),
-			check("type", "Product type is required")
-			.not()
-			.isEmpty(),
-			check("description", "Product description is required")
-			.not()
-			.isEmpty(),
-			check("price", "Product price is required")
-			.not()
-			.isEmpty(),
-			check("image", "Product image is required")
-			.not()
-			.isEmpty()
+			check("name", "Product name is required").not().isEmpty(),
+			check("type", "Product type is required").not().isEmpty(),
+			check("description", "Product description is required").not().isEmpty(),
+			check("price", "Product price is required").not().isEmpty(),
+			check("image", "Product image is required").not().isEmpty(),
 		],
 		auth,
-		permit
+		permit,
 	],
 	async (req, res) => {
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			return res.status(400).json({
-				errors: errors.array()
+				errors: errors.array(),
 			});
 		}
 
 		try {
-			const {
-				name,
-				description,
-				price,
-				type,
-				image
-			} = req.body;
+			const { name, description, price, type, image } = req.body;
 
-			const product = await Product.findByIdAndUpdate({
-				_id: req.params.product_ID
-			}, {
-				name,
-				description,
-				price,
-				type,
-				image
-			}, {
-				new: true
-			});
+			const product = await Product.findByIdAndUpdate(
+				{
+					_id: req.params.product_ID,
+				},
+				{
+					name,
+					description,
+					price,
+					type,
+					image,
+				},
+				{
+					new: true,
+				}
+			);
 
 			if (!product) {
 				return res.status(404).json({
-					msg: "No Product to Update"
+					msg: "No Product to Update",
 				});
 			}
 		} catch (error) {
@@ -225,11 +204,10 @@ router.put(
 // Delete Product
 router.delete("/:product_ID", auth, permit, async (req, res) => {
 	try {
-
 		// @TODO-- Delete static image from cloudinary
 		await Product.findByIdAndDelete(req.params.product_ID);
 		res.status(200).json({
-			msg: "Product Deleted"
+			msg: "Product Deleted",
 		});
 	} catch (error) {
 		console.error(error.message);

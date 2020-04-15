@@ -4,5 +4,6 @@
     "CLOUD_NAME": "stop2shop",
     "API_KEY": "218746364277995",
     "API_SECRET": "91VpCydoOahey2tpM-XeqQbNUns",
-    "SENDGRID_API_KEY": "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"
+    "SENDGRID_API_KEY": "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",
+    "PAYSTACK_SECRET_KEY": "Bearer sk_test_82b9b2c66ed9d09e34e15ec8f67e5403ca17d376"
 }

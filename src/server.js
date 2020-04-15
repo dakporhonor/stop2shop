@@ -2,7 +2,7 @@ const express = require('express')
 const connectedDB = require('./dbs/mongoose')
 const users = require('./routes/users')
 const products = require('./routes/products')
-
+const cart = require('./routes/cart')
 
 
 
@@ -15,5 +15,6 @@ app.use(express.json({
 }))
 app.use('/users', users)
 app.use('/products', products)
+app.use('/cart', cart)
 
 app.listen(port, () => console.log(`Server is running on port ${port}`))
